@@ -60,7 +60,6 @@ class ShapeNet(data.Dataset):
         sample = self.file_list[idx]
 
         data = IO.get(os.path.join(self.pc_path, sample['file_path'])).astype(np.float32).values
-        # data = self.random_sample(data, self.sample_points_num)
         data = self.pc_norm(data)
         data = torch.from_numpy(data).float()
         return sample['taxonomy_id'], sample['model_id'], data

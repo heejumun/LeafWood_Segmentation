@@ -1,6 +1,7 @@
 """
-Dataloader for Inference of Independent Evaluation Data with ground truth labels
+Dataloader for Inference of Independent Evaluation Data without labels
 """
+
 import numpy as np
 import os
 from torch.utils.data import Dataset

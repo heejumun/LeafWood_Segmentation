@@ -40,13 +40,7 @@ class IO:
     
     @classmethod
     def _read_csv(cls, file_path):
-        # 데이터 읽기
         df = pd.read_csv(file_path, encoding='utf-8-sig', header=None)
-        
-        # # 첫 번째 행이 컬럼 이름(예: 'X', 'Y', 'Z')인지 확인
-        # if df.iloc[0].str.match(r'^[A-Za-z]+$').all():  # 문자열로 된 컬럼이 있는지 확인
-        #     df = df[1:].reset_index(drop=True)  # 첫 번째 행을 삭제하고 인덱스 재설정
-        
         return df
     
     @classmethod

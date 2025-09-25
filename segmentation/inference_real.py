@@ -6,28 +6,55 @@ import importlib
 from pathlib import Path
 from tqdm import tqdm
 from dataset_real_inference import LeafWoodDataset
+
+# Optional visualization (can be removed if not used)
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  # update as needed
+
 
 def denormalize(points, centroid, scale_factor):
-    """Normalize된 point cloud 데이터를 원래 좌표로 복원"""
+    """
+    Restore normalized point cloud coordinates to the original scale.
+
+    Args:
+        points (numpy array): Normalized point cloud (N, 3).
+        centroid (numpy array): Centroid used for normalization (3,).
+        scale_factor (float): Scale factor used for normalization.
+
+    Returns:
+        numpy array: Denormalized point cloud (N, 3).
+    """
     return points * scale_factor + centroid
 
+
 def inplace_relu(m):
+    """Convert all ReLU layers to inplace=True."""
     classname = m.__class__.__name__
     if classname.find('ReLU') != -1:
-        m.inplace=True
+        m.inplace = True
+
 
 def to_categorical(y, num_classes):
-    """ 1-hot encodes a tensor """
-    new_y = torch.eye(num_classes)[y.view(-1).cpu().data.numpy(),]
-    if (y.is_cuda):
+    """One-hot encode tensor."""
+    new_y = torch.eye(num_classes)[y.cpu().data.numpy(), ]
+    if y.is_cuda:
         return new_y.cuda()
     return new_y
 
+
 def save_points_to_csv(points, pred_labels, file_dir, fn, class_name):
-    """Point cloud와 라벨을 CSV 저장"""
+    """
+    Save point cloud and predicted labels into a CSV file.
+
+    Args:
+        points (numpy array): Point cloud coordinates (N, 3).
+        pred_labels (numpy array): Predicted labels (N,).
+        file_dir (Path): Output directory.
+        fn (str): File name (without extension).
+        class_name (torch.Tensor): Class index tensor.
+    """
     points = points.squeeze()
     pred_labels = pred_labels.squeeze()
 
@@ -40,7 +67,7 @@ def save_points_to_csv(points, pred_labels, file_dir, fn, class_name):
         file = file_dir / f'{str(class_name.item()).zfill(8)}/{fn}.csv'
         os.makedirs(file.parent, exist_ok=True)
         np.savetxt(file, data, delimiter=',')
-        print(f"Saved points to {file}")
+        print(f"Saved CSV to {file}")
 
 
 def parse_args():
@@ -65,8 +92,8 @@ def main(args):
     convs4_dir.mkdir(parents=True, exist_ok=True)
     softmax_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create segmentation results dir
-    file_dir = Path('/bess25/heeju/DATA/Final/Model_B_inf')
+    # Create segmentation results directory
+    file_dir = Path("outputs/segmentation_results")
     file_dir.mkdir(parents=True, exist_ok=True)
 
     # Load model
@@ -88,6 +115,7 @@ def main(args):
     checkpoint = torch.load(args.ckpt_path, map_location='cpu')
     state_dict = checkpoint['model_state_dict']
 
+    # Remove "module." prefix if present
     from collections import OrderedDict
     new_state_dict = OrderedDict()
     for k, v in state_dict.items():
@@ -97,13 +125,26 @@ def main(args):
     print('Model loaded from', args.ckpt_path)
 
     # Load dataset
-    test_dataset = LeafWoodDataset(root=args.data_root, npoints=args.npoint, split='inference', normal_channel=False)
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
+    test_dataset = LeafWoodDataset(
+        root=args.data_root,
+        npoints=args.npoint,
+        split='inference',
+        normal_channel=False
+    )
+    test_dataloader = torch.utils.data.DataLoader(
+        test_dataset,
+        batch_size=args.batch_size,
+        shuffle=False,
+        num_workers=4
+    )
 
     print(f'Total test samples: {len(test_dataset)}')
 
+    # Inference loop
     with torch.no_grad():
-        for batch_id, (points, label, centroid, m, fn) in tqdm(enumerate(test_dataloader), total=len(test_dataloader)):
+        for batch_id, (points, label, centroid, m, fn) in tqdm(
+            enumerate(test_dataloader), total=len(test_dataloader)
+        ):
             points = points.float().cuda()
             label = label.long().cuda()
 
@@ -134,7 +175,7 @@ def main(args):
 
                 # Save features if requested
                 if args.return_features:
-                    # (1) convs4 raw logits 저장
+                    # (1) Save convs4 raw logits
                     if "convs4" in features:
                         logits = features["convs4"].squeeze()
                         if logits.ndim == 3:  # (B, C, N)
@@ -142,7 +183,7 @@ def main(args):
                         np.savetxt(convs4_dir / f"{extracted_name}.csv", logits, delimiter=',')
                         print(f"Saved convs4 logits to {convs4_dir / (extracted_name + '.csv')}")
 
-                    # (2) log_softmax 출력 저장
+                    # (2) Save log_softmax output
                     logsoftmax_out = seg_pred[i].cpu().numpy()  # (N, num_parts)
                     np.savetxt(softmax_dir / f"{extracted_name}.csv", logsoftmax_out, delimiter=',')
                     print(f"Saved log_softmax to {softmax_dir / (extracted_name + '.csv')}")
