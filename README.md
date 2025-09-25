@@ -103,9 +103,9 @@ python inference_real.py \
 
 To preprocess your point clouds to fit the input format
 
-```
-`segmentation/data_preprocessing.ipynb` provides preprocessing code for the following : (1) Voxelization (2) File Direction .json creation (3) Large file splitting and (4) Small file deletion.
-```
+`segmentation/data_preprocessing.ipynb` provides preprocessing code for the following : 
+(1) Voxelization (2) File Direction .json creation (3) Large file splitting and (4) Small file deletion.
+
 
 ### Training
 
