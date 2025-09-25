@@ -55,7 +55,7 @@ pip install --upgrade https://github.com/unlimblue/KNN_CUDA/releases/download/0.
 
 Our datasets for pretraining and finetuning are provided in [DATASET.md](./DATASET.md).
 
-## To Pretrain Point-M2AE model
+## To pretrain Point-M2AE model
 
 ### Training
 
