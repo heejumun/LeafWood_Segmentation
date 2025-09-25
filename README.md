@@ -3,8 +3,8 @@ Leaf wood pointcloud separation algorithm.
 
 ## Pretrained Models
 Pretrained models:
-| dataset  | url| performance |
-| --- | --- |  --- |
+| dataset  | url|
+| --- | --- | 
 | ShapeNet-55 | [[Google Drive](https://drive.google.com/file/d/1l16Xn5qD5f9gJwOd4XR_WFBRvHyp7jLf/view?usp=drive_link)]|
 | ShapeNet-55 + RW-1 | [[Google Drive](https://drive.google.com/file/d/1v_bwFVXuG2mmLp6Y9iiMhqloCllP0SG6/view?usp=drive_link)]| 
 | ShapeNet-55 + RW-1 + RW-2 | [[Google Drive](https://drive.google.com/file/d/1EHzpmOqrIVn05sn2xegr2l8W1YKWHp_-/view?usp=drive_link)]|
