@@ -70,7 +70,7 @@
 
 ```
 
-Download: Please download the data from [here](https://github.com/lulutang0608/Point-BERT/blob/49e2c7407d351ce8fe65764bbddd5d9c0e0a4c52/DATASET.md).
+Download: Please download the data from [here](https://github.com/lulutang0608/Point-BERT/blob/49e2c7407d351ce8fe65764bbddd5d9c0e0a4c52/DATASET.md). 
 
 ### Voxel_LW Dataset:
 
@@ -91,6 +91,8 @@ Download: Please download the data from [here](https://github.com/lulutang0608/P
 │  └── leafwood_data_test.json
 └──synsetoffset2category.txt
 
+each category folder, json folder and synsetoffset2category.txt file have to locate same direction
+
 ```
 
-Download: Please download the data from [here](https://shapenet.cs.stanford.edu/media/shapenetcore_partanno_segmentation_benchmark_v0_normal.zip). 
+Download: Please download the data from [here](https://shapenet.cs.stanford.edu/media/shapenetcore_partanno_segmentation_benchmark_v0_normal.zip). (Link will be revised)

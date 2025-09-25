@@ -14,8 +14,6 @@ from utils.logger import *
 from utils.misc import *
 from timm.scheduler import CosineLRScheduler
 from tools.to_tensor import collate_fn
-from tools.to_tensor import collate_fn_cyl
-from tools.to_tensor import collate_fn_up
 
 def dataset_builder(args, config):
     dataset = build_dataset_from_cfg(config._base_, config.others)
@@ -27,16 +25,14 @@ def dataset_builder(args, config):
                                             num_workers = int(args.num_workers),
                                             drop_last = config.others.subset == 'train',
                                             worker_init_fn = worker_init_fn,
-                                            sampler = sampler,)
-                                            #collate_fn = collate_fn)
+                                            sampler = sampler)
     else:
         sampler = None
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.others.bs,
                                                 shuffle = shuffle, 
                                                 drop_last = config.others.subset == 'train',
                                                 num_workers = int(args.num_workers),
-                                                worker_init_fn=worker_init_fn,)
-                                                #collate_fn = collate_fn)
+                                                worker_init_fn=worker_init_fn)
     return sampler, dataloader
 
 
@@ -62,50 +58,6 @@ def dataset_builder_collate(args, config):
                                                 collate_fn = collate_fn)
     return sampler, dataloader
 
-def dataset_builder_collate_cyl(args, config):
-    dataset = build_dataset_from_cfg(config._base_, config.others)
-    shuffle = config.others.subset == 'train'
-    
-    if args.distributed:
-        sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle = shuffle)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size = config.others.bs,
-                                            num_workers = int(args.num_workers),
-                                            drop_last = config.others.subset == 'train',
-                                            worker_init_fn = worker_init_fn,
-                                            sampler = sampler,
-                                            collate_fn = collate_fn_cyl)
-    else:
-        sampler = None
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.others.bs,
-                                                shuffle = shuffle, 
-                                                drop_last = config.others.subset == 'train',
-                                                num_workers = int(args.num_workers),
-                                                worker_init_fn=worker_init_fn,
-                                    
-                                                collate_fn = collate_fn_cyl)
-    return sampler, dataloader
-
-def dataset_builder_collate_up(args, config):
-    dataset = build_dataset_from_cfg(config._base_, config.others)
-    shuffle = config.others.subset == 'train'
-    
-    if args.distributed:
-        sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle = shuffle)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size = config.others.bs,
-                                            num_workers = int(args.num_workers),
-                                            drop_last = config.others.subset == 'train',
-                                            worker_init_fn = worker_init_fn,
-                                            sampler = sampler,
-                                            collate_fn = collate_fn_up)
-    else:
-        sampler = None
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=config.others.bs,
-                                                shuffle = shuffle, 
-                                                drop_last = config.others.subset == 'train',
-                                                num_workers = int(args.num_workers),
-                                                worker_init_fn=worker_init_fn,
-                                                collate_fn = collate_fn_up)
-    return sampler, dataloader
 def dataset_builder_svm(config):
     train_val_loader = DataLoader(build_dataset_from_cfg(config.train._base_, config.train.others), num_workers=8, batch_size=128, shuffle=True)
     test_val_loader = DataLoader(build_dataset_from_cfg(config.test._base_, config.test.others), num_workers=8, batch_size=128, shuffle=True)

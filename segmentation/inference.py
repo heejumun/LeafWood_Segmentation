@@ -8,8 +8,7 @@ from tqdm import tqdm
 from dataset_inference import LeafWoodDataset
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 def denormalize(points, centroid, scale_factor):
     """
@@ -36,29 +35,6 @@ def to_categorical(y, num_classes):
     if (y.is_cuda):
         return new_y.cuda()
     return new_y
-
-def visualize_pointcloud(points, labels, save_path, title="Point Cloud Visualization"):
-    """
-    Point cloud 데이터를 시각화하고 이미지를 저장합니다.
-
-    Args:
-        points (numpy array): Point cloud 좌표 (N, 3).
-        labels (numpy array): Point cloud의 라벨 (N,).
-        save_path (str): 결과 이미지를 저장할 경로.
-        title (str): 시각화 제목.
-    """
-    # Color-blind friendly colors
-    leaf_color = '#56B4E9'  # Light blue
-    wood_color = '#E69F00'  # Orange
-
-    fig = plt.figure(figsize=(20, 8))
-
-    # 잎과 나무를 구분
-    leaf_points = points[labels == 1]
-    tree_points = points[labels == 0]
-
-    print(leaf_points.shape)
-    print(tree_points.shape)
 
 def save_points_to_csv(points, gt_labels, pred_labels, file_dir, fn, class_name):
     """
@@ -89,7 +65,6 @@ def save_points_to_csv(points, gt_labels, pred_labels, file_dir, fn, class_name)
         np.savetxt(file, data, delimiter=',')
         print(f"Saved Leaf points to {file}")
 
-
 def parse_args():
     parser = argparse.ArgumentParser('Inference')
     parser.add_argument('--data_root', type=str, required=True, help='Path to the dataset root')
@@ -99,7 +74,6 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=1, help='Batch size for inference')
     parser.add_argument('--model', type=str, default='Point_M2AE_SEG', help='Model name')
     return parser.parse_args()
-
 
 def main(args):
     # Create output directory
@@ -157,7 +131,7 @@ def main(args):
                     m[i].cpu().numpy()          # Batch에서 i번째 scale factor
                 )
 
-                # Visualize and save results
+                # Save results
                 extracted_name = os.path.splitext(os.path.basename(fn[1][0]))[0]
 
                 # Save leaf and wood points to CSV

@@ -13,74 +13,6 @@ from sklearn.svm import SVC
 from torchvision import transforms
 from datasets import data_transforms
 
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-
-import matplotlib.pyplot as plt
-import numpy as np
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-import seaborn as sns
-
-def visualize_features(features, labels, method='tsne', save_path=None, title='Feature Visualization'):
-    """
-    features: (N, D) numpy array of feature vectors
-    labels: (N,) numpy array of int class indices (0 ~ 40)
-    method: 'tsne' or 'pca'
-    save_path: optional path to save figure
-    """
-    label_names = [
-        "airplane", "bathtub", "bed", "bench", "bookshelf", "bottle", "bowl",
-        "car", "chair", "cone", "cup", "curtain", "desk", "door", "dresser",
-        "flower_pot", "glass_box", "guitar", "keyboard", "lamp", "laptop",
-        "mantel", "monitor", "night_stand", "person", "piano", "plant", "radio",
-        "range_hood", "sink", "sofa", "stairs", "stool", "table", "tent",
-        "toilet", "tv_stand", "vase", "wardrobe", "xbox", "tree"
-    ]
-
-    if method == 'tsne':
-        reducer = TSNE(n_components=2, random_state=42)
-    elif method == 'pca':
-        reducer = PCA(n_components=2)
-    else:
-        raise ValueError("method must be 'tsne' or 'pca'")
-
-    reduced_feats = reducer.fit_transform(features)
-
-    plt.figure(figsize=(14, 10))
-    palette = sns.color_palette("hls", 41)  # 41개의 고유 색상
-
-    for i in range(41):
-        idx = labels == i
-        plt.scatter(reduced_feats[idx, 0], reduced_feats[idx, 1],
-                    label=label_names[i], s=10, alpha=0.8, color=palette[i])
-
-    plt.legend(
-        title="Classes", loc='upper center',
-        bbox_to_anchor=(0.5, -0.1), ncol=5, fontsize='small'
-    )
-    plt.title(title)
-    plt.tight_layout()
-
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    plt.show()
-
-
-
-
 train_transforms = transforms.Compose(
     [
         data_transforms.PointcloudScaleAndTranslate(),
@@ -276,16 +208,7 @@ def run_net(args, config, train_writer=None, val_writer=None):
         model_tl = SVC(C = 0.01, kernel ='linear')
         model_tl.fit(feats_train, labels_train)
         test_accuracy = model_tl.score(feats_test, labels_test)
-        
-        #         # SVM 평가 끝나고 나서 시각화
-        # visualize_features(
-        #     features=feats_test, 
-        #     labels=labels_test, 
-        #     method='tsne',  # or 'pca'
-        #     save_path=f'/bess25/heeju/REGRESSION/Point-M2AE/tools/feature_vis/feature_vis{i}.png', 
-        #     title='SVM Feature Visualization'
-        # )
-
+  
         print_log(f"Linear Accuracy : {test_accuracy}", logger=logger)
         if test_accuracy > best_accuracy:
             best_accuracy = test_accuracy

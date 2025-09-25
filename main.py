@@ -1,12 +1,4 @@
 from tools import pretrain_run_net as pretrain
-from tools import test_svm_run_net_modelnet40 as test_svm_modelnet40
-from tools import test_svm_run_net_scan as test_svm_scan
-from tools import finetune_run_net as finetune
-from tools import test_run_net as test_net
-from tools import reg_net
-from tools import vreg_net
-from tools import vcyl_net
-from tools import up_net
 from utils import parser, dist_utils, misc
 from utils.logger import *
 from utils.config import *
@@ -14,8 +6,6 @@ import time
 import os
 import torch
 from tensorboardX import SummaryWriter
-
-
 
 def main():
     # args
@@ -83,26 +73,7 @@ def main():
         config.dataset.val.others.way = args.way
         config.dataset.val.others.fold = args.fold
         
-    if args.test:
-        test_net(args, config)
-        return
-    
-    if args.test_svm == 'modelnet40':
-        test_svm_modelnet40(args, config)
-    elif args.test_svm == 'scan':
-        test_svm_scan(args, config)
-    elif args.finetune_model == True:
-        finetune(args, config, train_writer, val_writer)
-    elif args.reg_model == True:
-        reg_net(args, config, train_writer, val_writer)
-    elif args.vreg_model == True:
-        vreg_net(args, config, train_writer, val_writer)
-    elif args.vcyl_model == True:
-        vcyl_net(args, config, train_writer, val_writer)
-    elif args.up_model == True:
-        up_net(args, config, train_writer, val_writer)
-    else:
-        pretrain(args, config, train_writer, val_writer)
+    pretrain(args, config, train_writer, val_writer)
 
 
 if __name__ == '__main__':

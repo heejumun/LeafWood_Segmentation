@@ -1,13 +1,19 @@
 """
-Dataloader for Training
+Dataloader for Inference of Independent Evaluation Data with ground truth labels
 """
-
 import numpy as np
 import os
 from torch.utils.data import Dataset
-from pointnet2_utils import pc_normalize
 import json
 import pandas as pd
+
+def pc_normalize(pc):
+    l = pc.shape[0]
+    centroid = np.mean(pc, axis=0)
+    pc = pc - centroid
+    m = np.max(np.sqrt(np.sum(pc**2, axis=1)))
+    pc = pc / m
+    return pc, centroid, m 
 
 class LeafWoodDataset(Dataset):
     def __init__(self, root, npoints=32768, split='train', class_choice=None, normal_channel=False):
@@ -73,7 +79,7 @@ class LeafWoodDataset(Dataset):
             self.classes[i] = self.classes_original[i]
 
         # Mapping from category ('Chair') to a list of int [10,11,12,13] as segmentation labels
-        self.seg_classes = {'NL': [0, 1], 'BL' : [2, 3]}
+        self.seg_classes = {'NL' : [0, 1], 'BL' : [2, 3]}
 
         self.cache = {}  # from index to (point_set, cls, seg) tuple
         self.cache_size = 20000
@@ -81,7 +87,7 @@ class LeafWoodDataset(Dataset):
 
     def __getitem__(self, index):
         if index in self.cache:
-            point_set, cls, seg = self.cache[index]
+            point_set, cls = self.cache[index]
         else:
             fn = self.datapath[index]
             cat = self.datapath[index][0]
@@ -96,15 +102,11 @@ class LeafWoodDataset(Dataset):
                 point_set = data[:, 0:3]
             else:
                 point_set = data[:, 0:6]
-            seg = data[:, -1].astype(np.int32)
             if len(self.cache) < self.cache_size:
-                self.cache[index] = (point_set, cls, seg)
-        point_set[:, 0:3] = pc_normalize(point_set[:, 0:3])
+                self.cache[index] = (point_set, cls)
 
-        # choice = np.random.choice(len(seg), self.npoints, replace=True)
-        
-
-        return point_set, cls, seg
+        point_set[:, 0:3], c, m = pc_normalize(point_set[:, 0:3])
+        return point_set, cls, c, m, fn
 
     def __len__(self):
         return len(self.datapath)

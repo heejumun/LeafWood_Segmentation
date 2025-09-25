@@ -81,15 +81,15 @@ def add_weight_decay(model, weight_decay=1e-5, skip_list=()):
 def parse_args():
     parser = argparse.ArgumentParser('Model')
     parser.add_argument('--model', type=str, default='pt', help='model name')
-    parser.add_argument('--batch_size', type=int, default=16, help='batch Size during training')
+    parser.add_argument('--batch_size', type=int, default=24, help='batch Size during training')
     parser.add_argument('--epoch', default=300, type=int, help='epoch to run')
     parser.add_argument('--warmup_epoch', default=10, type=int, help='warmup epoch')
     parser.add_argument('--learning_rate', default=0.0002, type=float, help='initial learning rate')
     parser.add_argument('--log_dir', type=str, default='./exp', help='log path')
-    parser.add_argument('--npoint', type=int, default=32768, help='point Number')
+    parser.add_argument('--npoint', type=int, default=16384, help='point Number')
     parser.add_argument('--normal', action='store_true', default=False, help='use normals')
     parser.add_argument('--ckpts', type=str, default=None, help='ckpts')
-    parser.add_argument('--root', type=str, default='/esail4/heeju/REGRESSION/Point-M2AE/data/segmentation', help='data root')
+    parser.add_argument('--root', type=str, default='/bess25/heeju/DATA/Final/LWSEG_Voxel', help='data root')
     parser.add_argument('--resume', action='store_true', default=False, help='autoresume training (interrupted by accident)')
     parser.add_argument('--distributed', action='store_true', default=False, help='Use DistributedDataParallel')
     return parser.parse_args()
@@ -206,12 +206,23 @@ def main(args):
         t_in_epochs=True
     )
 
+
+    best_acc = 0
+    global_epoch = 0
+    best_class_avg_iou = 0
+    best_inctance_avg_iou = 0
+
     if args.resume and args.ckpts is not None:  # Resume training
         if local_rank == 0:
             log_string(f"Resuming training from checkpoint: {args.ckpts}")
         checkpoint = torch.load(args.ckpts, map_location=f'cuda:{local_rank}')
         classifier.load_state_dict(checkpoint['model_state_dict'], strict=False)
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+ 
+        best_acc = checkpoint.get('best_acc', 0)
+        best_class_avg_iou = checkpoint.get('best_class_avg_iou', 0)
+        best_inctance_avg_iou = checkpoint.get('best_inctance_avg_iou', 0)
+        
         start_epoch = checkpoint['epoch'] + 1
         if local_rank == 0:
             log_string(f"Resumed training from epoch {start_epoch}")
@@ -228,11 +239,6 @@ def main(args):
         if local_rank == 0:
             log_string("No checkpoint provided. Starting training from scratch.")
 
-    best_acc = 0
-    global_epoch = 0
-    best_class_avg_iou = 0
-    best_inctance_avg_iou = 0
-
     classifier.zero_grad()
     for epoch in range(start_epoch, args.epoch):
         if args.distributed:
@@ -247,12 +253,19 @@ def main(args):
         '''한 epoch 학습'''
         for i, (points, label, target) in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9, disable=(local_rank != 0)):
             num_iter += 1
+
+            
             points = points.data.numpy()
             points[:, :, 0:3] = provider.random_scale_point_cloud(points[:, :, 0:3])
             points[:, :, 0:3] = provider.shift_point_cloud(points[:, :, 0:3])
             points = torch.Tensor(points)
             points, label, target = points.float().cuda(), label.long().cuda(), target.long().cuda()
 
+            if torch.isnan(points).any() or torch.isinf(points).any():
+                print("points contains NaN or Inf values!")
+            if torch.isnan(target).any() or torch.isinf(target).any():
+                print("target contains NaN or Inf values!")
+            
             seg_pred = classifier(points, to_categorical(label, num_classes))
             seg_pred = seg_pred.contiguous().view(-1, num_part)
             target = target.view(-1, 1)[:, 0]
@@ -410,10 +423,12 @@ def main(args):
         if local_rank == 0:
             log_string('Epoch %d test Accuracy: %f  Class avg mIOU: %f   Inctance avg mIOU: %f' % (
                 epoch + 1, test_metrics['accuracy'], test_metrics['class_avg_iou'], test_metrics['inctance_avg_iou']))
+            
+            # ===== Best Model 저장 =====
             if test_metrics['inctance_avg_iou'] >= best_inctance_avg_iou:
-                logger.info('Save model...')
+                logger.info('Save best model...')
                 savepath = str(checkpoints_dir) + '/best_model.pth'
-                log_string('Saving at %s' % savepath)
+                log_string('Saving best at %s' % savepath)
                 state = {
                     'epoch': epoch,
                     'train_acc': train_instance_acc,
@@ -424,8 +439,23 @@ def main(args):
                     'optimizer_state_dict': optimizer.state_dict(),
                 }
                 torch.save(state, savepath)
-                log_string('Saving model....')
+                log_string('Best model saved.')
 
+            # ===== Last Model 저장 (매 epoch마다) =====
+            savepath = str(checkpoints_dir) + '/ckpt_last.pth'
+            state = {
+                'epoch': epoch,
+                'train_acc': train_instance_acc,
+                'test_acc': test_metrics['accuracy'],
+                'class_avg_iou': test_metrics['class_avg_iou'],
+                'inctance_avg_iou': test_metrics['inctance_avg_iou'],
+                'model_state_dict': classifier.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }
+            torch.save(state, savepath)
+            log_string(f'Last checkpoint saved at {savepath}')
+
+            # ===== Best metrics 업데이트 =====
             if test_metrics['accuracy'] > best_acc:
                 best_acc = test_metrics['accuracy']
             if test_metrics['class_avg_iou'] > best_class_avg_iou:
