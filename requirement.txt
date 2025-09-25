@@ -1,0 +1,16 @@
+argparse
+easydict
+einops
+h5py
+laspy
+matplotlib
+numpy
+open3d==0.18.0
+pyyaml
+scipy
+tensorboardX
+timm==0.4.5
+tqdm
+urllib3==2.2.3
+transforms3d
+termcolor
