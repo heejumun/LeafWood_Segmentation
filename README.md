@@ -56,9 +56,9 @@ Our datasets for pretraining and finetuning are provided in [DATASET.md](./DATAS
 
 ## To pretrain Point-M2AE model
 
-### Training
+### Pretraining
 
-To train a point cloud completion model from scratch, run:
+To pretrain a point cloud completion model from scratch, run:
 
 ```
 # Use DistributedDataParallel (DDP)
@@ -73,7 +73,26 @@ CUDA_VISIBLE_DEVICES=0,1 python main.py \
     --resume
 ```
 
-## To use Segmentation Algorithm
+### Finetuning
+
+To fine-tune a leaf-wood segmentation model from scratch, run:
+
+```
+# Use DistributedDataParallel (DDP)
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 main_leafwood.py \
+    --model Point_M2AE_SEG \ 
+    --log_dir <dir> \
+    --ckpts <pretrained_ckpts_path> \
+    --distributed 
+
+# resume model 
+CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 main_leafwood.py \
+    --model Point_M2AE_SEG \ 
+    --log_dir <dir> \
+    --ckpts <last_ckpts_path> \
+    --distributed \
+    --resume 
+```
 
 ### Evaluation and Inference
 
@@ -106,23 +125,3 @@ To preprocess your point clouds to fit the input format
 (1) Voxelization (2) File Direction .json creation (3) Large file splitting and (4) Small file deletion.
 
 
-### Training
-
-To train a point cloud completion model from scratch, run:
-
-```
-# Use DistributedDataParallel (DDP)
-CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 main_leafwood.py \
-    --model Point_M2AE_SEG \ 
-    --log_dir <dir> \
-    --ckpts <pretrained_ckpts_path> \
-    --distributed 
-
-# resume model 
-CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc_per_node=2 main_leafwood.py \
-    --model Point_M2AE_SEG \ 
-    --log_dir <dir> \
-    --ckpts <last_ckpts_path> \
-    --distributed \
-    --resume 
-```
