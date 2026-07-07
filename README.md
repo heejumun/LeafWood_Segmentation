@@ -5,16 +5,15 @@ Leaf wood pointcloud separation algorithm.
 Pretrained models:
 | dataset  | url|
 | --- | --- | 
-| ShapeNet-55 | [[Google Drive](https://drive.google.com/file/d/1l16Xn5qD5f9gJwOd4XR_WFBRvHyp7jLf/view?usp=drive_link)]|
-| ShapeNet-55 + RW-1 | [[Google Drive](https://drive.google.com/file/d/1v_bwFVXuG2mmLp6Y9iiMhqloCllP0SG6/view?usp=drive_link)]| 
-| ShapeNet-55 + RW-1 + RW-2 | [[Google Drive](https://drive.google.com/file/d/1EHzpmOqrIVn05sn2xegr2l8W1YKWHp_-/view?usp=drive_link)]|
+| ShapeNet-55 | [[Google Drive](https://drive.google.com/file/d/1ooQcI_aNFRvav9GKhITU6LsEGJ_1aSmT/view?usp=sharing)]|
+| ShapeNet-55 + KR | [[Google Drive](https://drive.google.com/file/d/1NWqczbgAWMXLMpC9NtOfC6j5EFJr9Mab/view?usp=sharing)]|
 
 Finetuned Leaf-Wood Segmentation models:
 | dataset  | url| performance |
 | --- | --- |  --- |
-| ShapeNet-55 | [[Google Drive](https://drive.google.com/file/d/1WzERLlbSwzGOBybzkjBrApwyVMTG00CJ/view?usp=sharing)] | Acc = 0.90, mIoU = 0.74|
-| ShapeNet-55 + RW-1 | [[Google Drive](https://drive.google.com/file/d/1vu3vm90WFOefAegkmw1gRklFrymoP_js/view?usp=drive_link)] | Acc = 0.91, mIoU = 0.77| 
-| ShapeNet-55 + RW-1 + RW-2 | [[Google Drive](https://drive.google.com/file/d/11AjbHQhVzzIKXKvCKubpU0u6cTGc38-r/view?usp=drive_link)] | Acc = 0.86, mIoU = 0.63| 
+| Randomly-initialized | [[Google Drive](https://drive.google.com/file/d/1mDXFo97AvUbWBTzyr3bbtgD3evUBksGT/view?usp=sharing)] | Acc = 0.92, mIoU = 0.78|
+| ShapeNet-pretrained | [[Google Drive](https://drive.google.com/file/d/1LoKmk9nvh-p00SwnmptvY5_uZUWKizF5/view?usp=sharing)] | Acc = 0.92, mIoU = 0.80| 
+| ShapeNet + KR-pretrained | [[Google Drive](https://drive.google.com/file/d/16jcfxkEbgtsTPbCXMFLPo86AW2-vWWGl/view?usp=sharing)] | Acc = 0.93, mIoU = 0.82| 
 
 ### Requirements
 
